@@ -18,11 +18,27 @@ canvas {
   display: block;
 }
 
+.legend {
+  border-bottom: solid 1px #ccc;
+}
+
 .log {
+  flex-grow: 1;
+  overflow: auto;
+  text-align: right;
+  padding-right: .5em;
+  margin-top: .5em;
+}
+
+aside {
   background-color: #fff;
   position: absolute;
+  display: flex;
+  flex-direction: column;
   top: 0;
   bottom: 0;
-  left: 0;
-  overflow: auto;
+  right: 0;
+  padding: .5em;
+  box-sizing: border-box;
+  box-shadow: 0 0 3px #666;
 }

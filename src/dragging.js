@@ -14,24 +14,27 @@ export default function applyDragging(canvasEl, ctx, dragCallback) {
 
   function stopDrag() {
     window.removeEventListener('mousemove', updateDrag);
+    window.removeEventListener('mouseleave', stopDrag);
+    canvasEl.removeEventListener('mouseup', stopDrag);
+
     storedX = currentX;
     storedY = currentY;
   }
 
   function startDrag(ev) {
+    window.addEventListener('mousemove', updateDrag);
+    window.addEventListener('mouseleave', stopDrag);
+    canvasEl.addEventListener('mouseup', stopDrag);
+
     startPos = {
       x: ev.pageX,
       y: ev.pageY
     };
-
-    window.addEventListener('mousemove', updateDrag);
   }
 
   canvasEl.addEventListener('mousedown', startDrag);
-  canvasEl.addEventListener('mouseup', stopDrag);
 
   return function removeDrag() {
     canvasEl.removeEventListener('mousedown', startDrag);
-    canvasEl.removeEventListener('mouseup', stopDrag);
   };
 }

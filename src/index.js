@@ -2,15 +2,17 @@ import sieve from './sieve';
 import configs from './configs';
 import applyDragging from './dragging';
 import primeList from './primeList';
-import _ from 'lodash';
+import drawLegend from './drawLegend';
 import './styles.scss';
 
-const NUMBER_COUNT = 900;
+const NUMBER_COUNT = 10000;
 const HALF = 0.5;
+const DOUBLE = 2;
 const LINE_WIDTH = 20;
+const CIRCLE_WIDTH = 2;
 const primes = sieve(NUMBER_COUNT);
 
-const canvasEl = document.querySelector('canvas');
+const canvasEl = document.querySelector('.lines');
 const ctx = canvasEl.getContext('2d');
 
 let canvasWidth = 0;
@@ -29,13 +31,6 @@ function applyConfig(numText) {
   ctx.textAlign = config.labelHorizontal;
   ctx.textBaseline = config.labelVertical;
   ctx.setLineDash(config.dash);
-}
-
-function setTranslate(newTranslateX, newTranslateY) {
-  translateX = newTranslateX;
-  translateY = newTranslateY;
-
-  executeApp();
 }
 
 function drawLines() {
@@ -65,6 +60,10 @@ function drawLines() {
       const numberY = Math.floor((currentPosition.y + previousPosition.y) * HALF);
 
       ctx.fillText(numText, numberX, numberY);
+
+      ctx.beginPath();
+      ctx.arc(previousPosition.x, previousPosition.y, CIRCLE_WIDTH, 0, DOUBLE * Math.PI);
+      ctx.fill();
     }
   }
 }
@@ -73,14 +72,22 @@ function executeApp() {
   canvasWidth = canvasEl.width = window.innerWidth;
   canvasHeight = canvasEl.height = window.innerHeight;
   ctx.translate(translateX, translateY);
-  ctx.font = '12px Consolas';
+  ctx.font = '14px Consolas';
 
   applyConfig('1');
   drawLines();
 }
 
+function setTranslate(newTranslateX, newTranslateY) {
+  translateX = newTranslateX;
+  translateY = newTranslateY;
+
+  executeApp();
+}
+
 primeList(NUMBER_COUNT, primes);
-applyDragging(canvasEl, ctx, _.throttle(setTranslate, 1));
+drawLegend(LINE_WIDTH);
+applyDragging(canvasEl, ctx, setTranslate);
 executeApp();
 
 window.addEventListener('resize', executeApp);
