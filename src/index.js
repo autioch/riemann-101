@@ -8,13 +8,14 @@ import './styles.scss';
 const NUMBER_COUNT = 10000;
 const HALF = 0.5;
 const DOUBLE = 2;
-const LINE_WIDTH = 20;
 const CIRCLE_WIDTH = 2;
 const primes = sieve(NUMBER_COUNT);
 
 const canvasEl = document.querySelector('.lines');
+const lineWidthEl = document.querySelector('.line-width');
 const ctx = canvasEl.getContext('2d');
 
+let lineWidth = 0;
 let canvasWidth = 0;
 let canvasHeight = 0;
 let translateX = 0;
@@ -48,7 +49,7 @@ function drawLines() {
       applyConfig(numText);
     }
 
-    currentPosition = currentDirector(currentPosition, LINE_WIDTH);
+    currentPosition = currentDirector(currentPosition, lineWidth);
 
     ctx.beginPath();
     ctx.moveTo(previousPosition.x, previousPosition.y);
@@ -56,8 +57,8 @@ function drawLines() {
     ctx.stroke();
 
     if (isPrime) {
-      const numberX = Math.floor((currentPosition.x + previousPosition.x) * HALF);
-      const numberY = Math.floor((currentPosition.y + previousPosition.y) * HALF);
+      const numberX = previousPosition.x;// Math.floor((currentPosition.x + previousPosition.x) * HALF);
+      const numberY = previousPosition.y;// Math.floor((currentPosition.y + previousPosition.y) * HALF);
 
       ctx.fillText(numText, numberX, numberY);
 
@@ -71,6 +72,7 @@ function drawLines() {
 function executeApp() {
   canvasWidth = canvasEl.width = window.innerWidth;
   canvasHeight = canvasEl.height = window.innerHeight;
+  lineWidth = lineWidthEl.value;
   ctx.translate(translateX, translateY);
   ctx.font = '14px Consolas';
 
@@ -86,8 +88,9 @@ function setTranslate(newTranslateX, newTranslateY) {
 }
 
 primeList(NUMBER_COUNT, primes);
-drawLegend(LINE_WIDTH);
+drawLegend();
 applyDragging(canvasEl, ctx, setTranslate);
 executeApp();
 
 window.addEventListener('resize', executeApp);
+lineWidthEl.addEventListener('input', executeApp);
