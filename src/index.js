@@ -1,121 +1,86 @@
 import sieve from './sieve';
+import configs from './configs';
+import applyDragging from './dragging';
+import primeList from './primeList';
+import _ from 'lodash';
 import './styles.scss';
 
-const count = 900;
-const lineWidth = 10;
-const half = 0.5;
-const primes = sieve(count);
+const NUMBER_COUNT = 900;
+const HALF = 0.5;
+const LINE_WIDTH = 20;
+const primes = sieve(NUMBER_COUNT);
 
-const logEl = document.querySelector('div');
 const canvasEl = document.querySelector('canvas');
 const ctx = canvasEl.getContext('2d');
 
+let canvasWidth = 0;
+let canvasHeight = 0;
+let translateX = 0;
+let translateY = 0;
 let currentDirector;
-let currentColor;
-let currentX = 1800; // eslint-disable-line no-magic-numbers
-let currentY = 800; // eslint-disable-line no-magic-numbers
 
-function resizeCanvas() {
-  canvasEl.width = window.innerWidth;
-  canvasEl.height = window.innerHeight;
-}
+function applyConfig(numText) {
+  const lastCipher = numText[numText.length - 1];
+  const config = configs[lastCipher];
 
-const configs = {
-  '1': {
-    director() {
-      currentY = currentY - lineWidth;
-    },
-    color: '#f00',
-    labelHorizontal: 'left',
-    labelVertical: 'top'
-  },
-  '2': {
-    director() {
-      currentX = currentX + lineWidth;
-      currentY = currentY - (lineWidth * half);
-    },
-    color: '#0ff',
-    labelHorizontal: 'left',
-    labelVertical: 'bottom'
-  },
-  '3': {
-    director() {
-      currentX = currentX + lineWidth;
-      currentY = currentY + (lineWidth * half);
-    },
-    color: '#00f',
-    labelHorizontal: 'left',
-    labelVertical: 'bottom'
-  },
-  '5': {
-    director() {
-      currentY = currentY + lineWidth;
-    },
-    color: '#f0f',
-    labelHorizontal: 'right',
-    labelVertical: 'top'
-  },
-  '7': {
-    director() {
-      currentX = currentX - lineWidth;
-      currentY = currentY + (lineWidth * half);
-    },
-    color: '#000',
-    labelHorizontal: 'right',
-    labelVertical: 'bottom'
-  },
-  '9': {
-    director() {
-      currentX = currentX - lineWidth;
-      currentY = currentY - (lineWidth * half);
-    },
-    color: '#0f0',
-    labelHorizontal: 'right',
-    labelVertical: 'top'
-  }
-};
-
-function applyConfig(config) {
-  currentColor = config.color;
   currentDirector = config.director;
   ctx.strokeStyle = config.color;
   ctx.fillStyle = config.color;
   ctx.textAlign = config.labelHorizontal;
   ctx.textBaseline = config.labelVertical;
+  ctx.setLineDash(config.dash);
 }
-resizeCanvas();
 
-applyConfig(configs['1']);
+function setTranslate(newTranslateX, newTranslateY) {
+  translateX = newTranslateX;
+  translateY = newTranslateY;
 
-for (let num = 1; num < count; num++) {
-  const numText = num.toString();
+  executeApp();
+}
 
-  const isPrime = primes[numText];
+function drawLines() {
+  let currentPosition = {
+    x: Math.floor(canvasWidth * HALF),
+    y: Math.floor(canvasHeight * HALF)
+  };
 
-  if (isPrime) {
-    const lastCipher = numText[numText.length - 1];
+  for (let num = 1; num < NUMBER_COUNT; num++) {
+    const numText = num.toString();
+    const isPrime = primes[numText];
+    const previousPosition = currentPosition;
 
-    applyConfig(configs[lastCipher]);
-  }
-  const previousX = currentX;
-  const previousY = currentY;
+    if (isPrime) {
+      applyConfig(numText);
+    }
 
-  currentDirector();
-  ctx.beginPath();
-  ctx.moveTo(previousX, previousY);
-  ctx.lineTo(currentX, currentY);
-  ctx.stroke();
+    currentPosition = currentDirector(currentPosition, LINE_WIDTH);
 
-  const numberX = Math.floor((currentX + previousX) * half);
-  const numberY = Math.floor((currentY + previousY) * half);
+    ctx.beginPath();
+    ctx.moveTo(previousPosition.x, previousPosition.y);
+    ctx.lineTo(currentPosition.x, currentPosition.y);
+    ctx.stroke();
 
-  if (isPrime) {
-    const logItemEl = document.createElement('div');
+    if (isPrime) {
+      const numberX = Math.floor((currentPosition.x + previousPosition.x) * HALF);
+      const numberY = Math.floor((currentPosition.y + previousPosition.y) * HALF);
 
-    logItemEl.style.color = currentColor;
-    logItemEl.textContent = numText;
-    logEl.appendChild(logItemEl);
-
-    ctx.fillText(numText, numberX, numberY);
+      ctx.fillText(numText, numberX, numberY);
+    }
   }
 }
+
+function executeApp() {
+  canvasWidth = canvasEl.width = window.innerWidth;
+  canvasHeight = canvasEl.height = window.innerHeight;
+  ctx.translate(translateX, translateY);
+  ctx.font = '12px Consolas';
+
+  applyConfig('1');
+  drawLines();
+}
+
+primeList(NUMBER_COUNT, primes);
+applyDragging(canvasEl, ctx, _.throttle(setTranslate, 1));
+executeApp();
+
+window.addEventListener('resize', executeApp);

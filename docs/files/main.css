@@ -1,6 +1,11 @@
 html {
   width: 100%;
-  height: 100%; }
+  height: 100%;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  font-family: Consolas; }
 
 body {
   margin: 0;
@@ -13,7 +18,8 @@ body {
 canvas {
   display: block; }
 
-body > div {
+.log {
+  background-color: #fff;
   position: absolute;
   top: 0;
   bottom: 0;
