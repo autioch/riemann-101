@@ -13,9 +13,11 @@ const primes = sieve(NUMBER_COUNT);
 
 const canvasEl = document.querySelector('.lines');
 const lineWidthEl = document.querySelector('.line-width');
+const firstNumberEl = document.querySelector('.first-number');
 const ctx = canvasEl.getContext('2d');
 
 let lineWidth = 0;
+let firstNumber = 0;
 let canvasWidth = 0;
 let canvasHeight = 0;
 let translateX = 0;
@@ -25,6 +27,10 @@ let currentDirector;
 function applyConfig(numText) {
   const lastCipher = numText[numText.length - 1];
   const config = configs[lastCipher];
+
+  if (!config) { // we ignore 2 and 5
+    return;
+  }
 
   currentDirector = config.director;
   ctx.strokeStyle = config.color;
@@ -40,7 +46,7 @@ function drawLines() {
     y: Math.floor(canvasHeight * HALF)
   };
 
-  for (let num = 1; num < NUMBER_COUNT; num++) {
+  for (let num = firstNumber; num < NUMBER_COUNT; num++) {
     const numText = num.toString();
     const isPrime = primes[numText];
     const previousPosition = currentPosition;
@@ -73,6 +79,7 @@ function executeApp() {
   canvasWidth = canvasEl.width = window.innerWidth;
   canvasHeight = canvasEl.height = window.innerHeight;
   lineWidth = lineWidthEl.value;
+  firstNumber = firstNumberEl.value;
   ctx.translate(translateX, translateY);
   ctx.font = '14px Consolas';
 
@@ -87,10 +94,11 @@ function setTranslate(newTranslateX, newTranslateY) {
   executeApp();
 }
 
-primeList(NUMBER_COUNT, primes);
+primeList(NUMBER_COUNT, primes, firstNumber);
 drawLegend();
 applyDragging(canvasEl, ctx, setTranslate);
 executeApp();
 
 window.addEventListener('resize', executeApp);
 lineWidthEl.addEventListener('input', executeApp);
+firstNumberEl.addEventListener('input', executeApp);
